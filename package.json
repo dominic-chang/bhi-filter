@@ -1,0 +1,15 @@
+{
+    "name": "bh-filter",
+    "version": "1.0.0",
+    "description": "Shader for a Swarzschild blackhole using the Betterborodov approximation",
+    "main": "script.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Dominic Chang",
+    "license": "ISC",
+    "dependencies": {
+        "stats-js": "^1.0.1",
+        "three": "^0.144.0"
+    }
+}
