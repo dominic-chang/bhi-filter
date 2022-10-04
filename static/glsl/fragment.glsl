@@ -1,10 +1,8 @@
 #define M_PI radians(180.)
-//3.1415926535897932384626433832795
 #define D1MACH1 1.175494351e-38
 #define D1MACH2 3.402823466e+38
 #define D1MACH3 1e-7
 
-uniform sampler2D texture1;
 uniform sampler2D textureft;
 uniform vec2 uResolution;
 uniform float theta;
@@ -262,61 +260,6 @@ float psimax(float mag){
     return 4.*mag*F(asin(sqrt(v31[0]/v41[0])), ellk)/sqrt(v31[0]*v42[0]);
 }
 
-float rsout(float mag, float psi){
-//Created by FabriceNeyret2 in 2019-02-14  https://www.shadertoy.com/view/3d23Dc
-    // --- Solving a*x³ +b*x³ +c*x +d = 0. -> l = min(3 solutions)
-    float a = 1., b = 0., c = -mag*mag, d = 2.*mag*mag,
-        Q, A, D, V, l, k = -1.;
-
-    if (abs(a)<1e-3) {                          // degenerated P3
-        k = -2.;
-        V = c*c - 4.*b*d;
-        l = ( -c -sign(b)* sqrt(V) ) / (2.*b);
-    }
-    else {                                      // true P3       
-    b /= a; c /= a; d /= a;
-    float p = ( 3.*c - b*b ) / 3.,
-            q = ( 9.*b*c - 27.*d - 2.*b*b*b) / 27., // -
-            r = q/2.; Q = p/3.;
-            D = Q*Q*Q + r*r;
-    
-    if ( D < 0.) {                            // --- if 3 sol
-        A = acos(r/sqrt(-Q*Q*Q)), 
-        k = round(1.5-A/6.283); // k = 0,1,2 ; we want min l
-#define sol(k) ( 2.*sqrt(-Q)* cos((A+(k)*6.283)/3.) - b/3. )
-        l = sol(k);
-    }
-    else                                        // --- if 1 sol
-        if (p>0.) V = -2.*sqrt(p/3.), 
-#define asinh(z) ( sign(z)*asinh(abs(z)) )      // fix asinh() symetry error 
-                l = -V* sinh(asinh(3.*-q/p/V)/3.) -b/3.; 
-        else      V = -2.*sqrt(-p/3.), 
-                l = sign(-q)*V* cosh(acosh(3.*abs(q)/p/V)/3.) -b/3.;
-    }
-    
-    // --- display
-    float r1 = l;
-    float r3 = sol(k+1.);
-    float r4 = sol(k+2.);
-    r3 = min(r4, r3);
-    r4 = max(r4, r3);
-
-    float r32 = r3;
-    float r41 = r4 - r1;
-    float r31 = r3 - r1;
-    float r42 = r4;
-    
-            
-
-    float ellk = min(r32*r41 / (r31*r42), 1.0);
-    float fo = F(asin(sqrt(r31/r41)),ellk);
-    float san = r41 * pow(sn(fo - 1./2. * sqrt(r31*r42)*psi/(mag), ellk), 2.0);
-    return (r31*r4-r3*san) / (r31 - san) ;
-
-}
-
-
-
 
 void main() {
     float scale = 15.0; // size of disk
@@ -337,9 +280,6 @@ void main() {
 
     float rs = 0.0;
     float rs1 = 0.0;
-    //float rs2 = 0.0;
-
-    //gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
     float phi = M_PI/2.*(1.+sign(costheta)) + M_PI*(1.-sign(y)) + sign(y)*acos(costheta*cosvarphi/sqrt(1.0-pow(sin(theta)*cosvarphi, 2.0)));
     float phi2 = phi + M_PI;
 
@@ -347,7 +287,6 @@ void main() {
     if (mag*mag > 27.){
         rs = rsin(mag, psi);
         rs1 = rsin(mag, M_PI+ psi);
-        //rs2 = rsin(mag, 2.*M_PI + psi);
 
 
         float deltapsi = psimax(mag) - M_PI;
@@ -355,10 +294,8 @@ void main() {
         float texcrd2rad = length(texcrd);
         float new_length = tan(atan(texcrd2rad)-deltapsi)/(texcrd2rad);
         vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5, 0.5+theta/(2.*M_PI));
-        //vec2 texcrd3 = new_length*texcrd/scale + vec2(0.5, 0.5+theta;
         texcrd3 = vec2(texcrd3[0]- floor(texcrd3[0]), texcrd3[1]- floor(texcrd3[1]));
         gl_FragColor = texture2D(textureft, texcrd3);
-        //gl_FragColor = vec4(sin(deltapsi));
 
 
         
@@ -375,21 +312,9 @@ void main() {
     
     if (rs > 7.0 && rs < scale) {
         vec2 uv2 = rs*vec2(cos(phi),sin(phi))/(2.0*scale)  + vec2(0.5, 0.5) ;
-        //gl_FragColor = texture2D(texture1, uv2);
 
     }
     if (rs1 > 7.0 && rs1 < scale){
         vec2 uv3 = rs1*vec2(cos(phi),sin(phi))/(2.0*scale)  + vec2(0.5, 0.5) ;
-        //gl_FragColor += texture2D(texture1, uv3);
     }
-    //if (rs2 > 7.0 && rs2 < scale){
-    //    vec2 uv4 = rs2*vec2(cos(phi),sin(phi))/(2.0*scale)  + vec2(0.5, 0.5) ;
-    //    gl_FragColor += texture2D(texture1, uv4);
-    //}
-
-    
-
-
-
-    //gl_FragColor = vec4(0.,0.,0.,1.);texture2D(textureft, uv);
 }
