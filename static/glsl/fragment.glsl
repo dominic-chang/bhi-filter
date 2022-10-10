@@ -194,50 +194,6 @@ float cn(float u, float m){
     }
 }
 
-float rsin(float mag, float psi){
-    vec2 q = vec2(2.*mag*mag, 0.);
-    vec2 p = vec2(-mag*mag, 0.);
-    vec2 C1 = c_pow(-q/2. + c_pow(c_pow(q, 2.)/4. + c_pow(p, 3.)/27., 1./2.), 1./3.);
-    vec2 C2 = c_m(C1, vec2(-1./2., sqrt(3.)/2.));
-    vec2 C3 = c_m(C1, vec2(-1./2., -sqrt(3.)/2.));
-    vec2 v4 = C1 - c_d(p, 3.*C1);
-    vec2 v1 = C2 - c_d(p, 3.*C2);
-    vec2 v3 = C3 - c_d(p, 3.*C3);
-
-    vec2 v32 = v3;
-    vec2 v21 = -v1;
-    vec2 v41 = v4 - v1;
-    vec2 v31 = v3 - v1;
-    vec2 v42 = v4;
-
-
-    float A = pow(c_m(v32, v42)[0], 0.5);
-    float B = pow(c_m(v31, v41)[0], 0.5);
-    
-    
-    float arg = sqrt(A*B)*(psi)/mag;
-    if(mag*mag < 27.){
-        float ellk = (pow(A + B, 2.) - pow(v1[0], 2.)) / (4.*A*B);
-        float fo =F(acos((A-B)/(A+B)), ellk) ;
-        if(arg < fo ){
-            float can = cn(fo - arg, ellk);
-            float num = -A*v1[0] + (A*v1[0])*can;
-            float den = -A + B + (A+B)*can;
-            return num/den;
-        } else {return 0.0;}
-    } else {
-
-        float ellk = v32[0]*v41[0] / (v31[0]*v42[0]);
-        float fo = F(asin(sqrt(v31[0]/v41[0])), ellk);
-        if(arg < 4.*fo ){
-            float san = v41[0]*pow(sn(fo - sqrt(v31[0]*v42[0])*psi/(2.*mag), ellk), 2.0);
-            float num = v31[0]*v4[0]-v3[0]*san;
-            float den = v31[0]-san;
-            return num/den;
-        } else {return 0.0;}
-    }
-}
-
 float psimax(float mag){
     vec2 q = vec2(2.*mag*mag, 0.);
     vec2 p = vec2(-mag*mag, 0.);
@@ -262,59 +218,25 @@ float psimax(float mag){
 
 
 void main() {
-    float scale = 15.0; // size of disk
+    float scale1 = 1.0; // size of disk
     float scale2 = 40.;//size of horizon
     vec2 uv = 2. * scale2 * ((gl_FragCoord.xy ) / uResolution.xy - vec2(0.5 ,0.5)); 
     float x = uv.x;
     float y = uv.y;
     float mag = length(uv);
     float cosvarphi = x/mag;
-    float costheta = cos(theta);
-    float sinvarphi = sign(costheta)*y/mag;
-
-
-
-    float tanvarphi = sinvarphi/abs(cosvarphi);
-    float psi = acos(-((sin(theta)*tanvarphi) / 
-        (pow(pow(costheta,2.0) + pow(tanvarphi,2.0), .5))));
-
-    float rs = 0.0;
-    float rs1 = 0.0;
-    float phi = M_PI/2.*(1.+sign(costheta)) + M_PI*(1.-sign(y)) + sign(y)*acos(costheta*cosvarphi/sqrt(1.0-pow(sin(theta)*cosvarphi, 2.0)));
-    float phi2 = phi + M_PI;
-
 
     if (mag*mag > 27.){
-        rs = rsin(mag, psi);
-        rs1 = rsin(mag, M_PI+ psi);
-
-
         float deltapsi = psimax(mag) - M_PI;
-        vec2 texcrd = (gl_FragCoord.xy/uResolution.xy - vec2(0.5, 0.5));
+        vec2 texcrd = scale1 * (gl_FragCoord.xy/uResolution.xy - vec2(0.5, 0.5));
         float texcrd2rad = length(texcrd);
         float new_length = tan(atan(texcrd2rad)-deltapsi)/(texcrd2rad);
         vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5, 0.5+theta/(2.*M_PI));
         texcrd3 = vec2(texcrd3[0]- floor(texcrd3[0]), texcrd3[1]- floor(texcrd3[1]));
         gl_FragColor = texture2D(textureft, texcrd3);
-
-
         
     } else {
-        rs = rsin(mag, psi);
-        rs1 = rsin(mag, M_PI + psi);
         gl_FragColor = vec4(0., 0., 0., 1.);
     }
     
-    if(rs < 2.0){
-        gl_FragColor = vec4(0., 0., 0., 1.);
-        return;
-    }
-    
-    if (rs > 7.0 && rs < scale) {
-        vec2 uv2 = rs*vec2(cos(phi),sin(phi))/(2.0*scale)  + vec2(0.5, 0.5) ;
-
-    }
-    if (rs1 > 7.0 && rs1 < scale){
-        vec2 uv3 = rs1*vec2(cos(phi),sin(phi))/(2.0*scale)  + vec2(0.5, 0.5) ;
-    }
 }
