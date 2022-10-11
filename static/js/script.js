@@ -12,7 +12,7 @@ function init() {
     antialias: true,
     });
     renderer.setClearColor(0x000000);
-    renderer.setSize(900, 900);
+    renderer.setSize(window.innerHeight, window.innerHeight);
 
     camera = new THREE.PerspectiveCamera(
     40,
@@ -69,7 +69,7 @@ function more() {
     uniforms = {
     textureft: {value:texture},
     uResolution: {
-        value: new THREE.Vector2(800, 800),
+        value: new THREE.Vector2(window.innerHeight, window.innerHeight),
     },
     }
     var shader_material = new THREE.ShaderMaterial({
