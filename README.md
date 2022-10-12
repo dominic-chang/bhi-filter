@@ -8,4 +8,4 @@ The image is then lensed by a Schwarzschild blackhole and projected onto the scr
 The filter uses a fastlight approximation to calculate the lensed image. Maybe I'll add some slowlight dynamics in a later update.
 
 
-Check out the filter on my [ghpage](dchang10.github.io/bhi-filter)
+Check out the filter on my [ghpage](https://dchang10.github.io/bhi-filter)
