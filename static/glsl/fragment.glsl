@@ -4,6 +4,7 @@
 #define D1MACH3 1e-7
 
 uniform sampler2D textureft;
+uniform sampler2D texturebg;
 uniform vec2 uResolution;
 uniform float theta;
 varying vec2 vUv;
@@ -218,23 +219,37 @@ float psimax(float mag){
 
 
 void main() {
-    float scale1 = 1.0; // size of disk
-    float scale2 = 40.;//size of horizon
-    vec2 uv = 2. * scale2 * ((gl_FragCoord.xy ) / uResolution.xy - vec2(0.5 ,0.5)); 
+    float scale1 = 5.0;
+    float x_translate = 0.0;
+    float imagescale = 0.75;
+    float scale2 = 25.0;//size of horizon
+    vec2 uv =  ((gl_FragCoord.xy ) / uResolution.x - vec2(x_translate + 0.5 ,0.5*uResolution.y/uResolution.x)); 
     float x = uv.x;
     float y = uv.y;
-    float mag = length(uv);
+    float mag = scale1*scale2 *length(uv);
     float cosvarphi = x/mag;
 
     if (mag*mag > 27.){
         float deltapsi = psimax(mag) - M_PI;
-        vec2 texcrd = scale1 * (gl_FragCoord.xy/uResolution.xy - vec2(0.5, 0.5));
-        float texcrd2rad = length(texcrd);
-        float new_length = tan(atan(texcrd2rad)-deltapsi)/(texcrd2rad);
-        vec2 texcrd3 = new_length*texcrd/vec2(1.,3.) + vec2(0.5, 0.5+theta/(2.*M_PI));
-        texcrd3 = vec2(texcrd3[0]- floor(texcrd3[0]), texcrd3[1]- floor(texcrd3[1]));
+        vec2 pretexcrd = scale1 * (gl_FragCoord.xy/uResolution.x);
+        vec2 texcrd = scale1*vec2(x, y);
+        float texcrd2rad = scale1*length(texcrd);
+        float angle = (atan(texcrd2rad) - deltapsi*10.0 );
+        float fov = 0.5*scale1;
+
+        float magfac= tan((angle))/(texcrd2rad);
+
+        vec2 texcrd3 = magfac*texcrd/imagescale + vec2(0.5, 0.5);
+        if(length(magfac*texcrd/imagescale)  > 0.5 || angle > atan(1.5)) {
+            //gl_FragColor = vec4(7.0/255.0, 12.0/255.0, 35.0/255.0, 1.);
+            vec2 skycrd = vec2(x + 0.5, y + 0.5);
+            gl_FragColor = texture2D(texturebg, skycrd);
+            return;
+        }
+
+        texcrd3 = vec2(texcrd3[0], 1.0-texcrd3[1]);
+
         gl_FragColor = texture2D(textureft, texcrd3);
-        
     } else {
         gl_FragColor = vec4(0., 0., 0., 1.);
     }

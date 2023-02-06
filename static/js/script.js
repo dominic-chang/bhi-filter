@@ -1,5 +1,6 @@
 import * as THREE from './three.module.js';
 import Stats from './Stats.js';
+//import image from "./photo-1610730260505-0b9ed7f06293.png"
 
 
 var renderer, uniforms, vShader, fShader, camera, scene, acc_disk, stats, video;
@@ -12,13 +13,13 @@ function init() {
     antialias: true,
     });
     renderer.setClearColor(0x000000);
-    renderer.setSize(window.innerHeight, window.innerHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
     camera = new THREE.PerspectiveCamera(
-    40,
-    1.,
+    50,
+    window.innerWidth/window.innerHeight,
     0.1, 
-    20000
+    200
     );
 
     scene = new THREE.Scene();
@@ -34,7 +35,7 @@ function init() {
     video = document.getElementById("video");
     if ( navigator.mediaDevices && navigator.mediaDevices.getUserMedia ) {
 
-        const constraints = { video: { width: 1280, height: 720, facingMode: 'user' } };
+        const constraints = { video: { width: 2000, height: 2000, facingMode: 'user' } };
 
         navigator.mediaDevices.getUserMedia( constraints ).then( function ( stream ) {
 
@@ -61,15 +62,25 @@ function init() {
 }
 
 function more() {
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        acc_disk.material.uniforms.uResolution.value = new THREE.Vector2(window.innerWidth, window.innerHeight)
+    }, true)
+   
+
     var geometry = new THREE.PlaneGeometry(2, 2);
 
     // VIDEO
     var texture = new THREE.VideoTexture(video);
+    var nighttexture = new THREE.TextureLoader().load("./static/images/sky.png");
 
     uniforms = {
     textureft: {value:texture},
+    texturebg: {value:nighttexture},
     uResolution: {
-        value: new THREE.Vector2(window.innerHeight, window.innerHeight),
+        value: new THREE.Vector2(window.innerWidth, window.innerHeight),
     },
     }
     var shader_material = new THREE.ShaderMaterial({
@@ -79,7 +90,7 @@ function more() {
     blending:       THREE.AdditiveBlendMode,
     transparent:    true
     });
-    var reflective_material = new THREE.MeshBasicMaterial(0xffffff);
+    //var reflective_material = new THREE.MeshBasicMaterial(0xffffff);
     acc_disk = new THREE.Mesh(geometry, shader_material);
 
     acc_disk.position.z = -1;
@@ -100,6 +111,7 @@ function animate(){
     stats.end();
     requestAnimationFrame(animate);
 }
+
 
 
 
