@@ -243,7 +243,7 @@ void main() {
         if(length(magfac*texcrd/imagescale)  > 0.5 || angle > atan(1.5)) {
             //gl_FragColor = vec4(7.0/255.0, 12.0/255.0, 35.0/255.0, 1.);
             vec2 skycrd = vec2(x + 0.5, y + 0.5);
-            gl_FragColor = texture2D(texturebg, skycrd);
+            gl_FragColor = texture2D(texturebg, texcrd3);//skycrd);
             return;
         }
 

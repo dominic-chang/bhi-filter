@@ -3,7 +3,7 @@ import Stats from './Stats.js';
 //import image from "./photo-1610730260505-0b9ed7f06293.png"
 
 
-var renderer, uniforms, vShader, fShader, camera, scene, acc_disk, stats, video;
+var renderer, uniforms, vShader, fShader, camera, scene, acc_disk, stats, video, video1;
 var loader = new THREE.FileLoader();
 init();
 
@@ -33,28 +33,67 @@ function init() {
         }
     }
     video = document.getElementById("video");
-    if ( navigator.mediaDevices && navigator.mediaDevices.getUserMedia ) {
+    video1 = document.getElementById("video1");
+    async function getCameraDevices() {
+        navigator.mediaDevices.getUserMedia({video: true}).then(stream => {console.log(stream)});
 
-        const constraints = { video: { width: 2000, height: 2000, facingMode: 'user' } };
+        let devices = await navigator.mediaDevices.enumerateDevices();
+        let videodevices = [];
+        for (let device of devices) {
+            if (device.kind === 'videoinput') {
+                videodevices.push(device);
+            }
+        }
+        //return videodevices;
+    
 
-        navigator.mediaDevices.getUserMedia( constraints ).then( function ( stream ) {
+        if ( navigator.mediaDevices && navigator.mediaDevices.getUserMedia ) {
 
-            // apply the stream to the video element used in the texture
+            const constraints = { 
+                video: { deviceId: {exact: videodevices[0].deviceId}, width: 2000, height: 2000},
+            };//, facingMode: 'user' } };
+            const constraints1 = { 
+                video: { deviceId: {exact: videodevices[1].deviceId}, width: 2000, height: 2000},
+            };//, facingMode: 'user' } };
 
-            video.srcObject = stream;
-            video.play();
 
-        } ).catch( function ( error ) {
 
-            console.error( 'Unable to access the camera/webcam.', error );
+            navigator.mediaDevices.getUserMedia( constraints ).then( function ( stream ) {
 
-        } );
+                // apply the stream to the video element used in the texture
 
-    } else {
+                video.srcObject = stream;
+                video.play();
 
-        console.error( 'MediaDevices interface not available.' );
 
-    }
+            } ).catch( function ( error ) {
+
+                console.error( 'Unable to access the camera/webcam.', error );
+
+            } );
+            navigator.mediaDevices.getUserMedia( constraints1 ).then( function ( stream ) {
+
+                // apply the stream to the video element used in the texture
+
+                video1.srcObject = stream;
+                video1.play();
+
+
+            } ).catch( function ( error ) {
+
+                console.error( 'Unable to access the camera/webcam.', error );
+
+            } );
+
+
+        } else {
+
+            console.error( 'MediaDevices interface not available.' );
+
+        }
+    };
+    const videodevices = getCameraDevices();
+
 
     loader.load('./static/glsl/fragment.glsl', function ( data ) {fShader =  data; runMoreIfDone(); },);
     loader.load('./static/glsl/vertex.glsl', function ( data ) {vShader =  data; runMoreIfDone(); },);
@@ -74,7 +113,7 @@ function more() {
 
     // VIDEO
     var texture = new THREE.VideoTexture(video);
-    var nighttexture = new THREE.TextureLoader().load("./static/images/sky.png");
+    var nighttexture = new THREE.VideoTexture(video1);//new THREE.TextureLoader().load("./static/images/sky.png");
 
     uniforms = {
     textureft: {value:texture},
