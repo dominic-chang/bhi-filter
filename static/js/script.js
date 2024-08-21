@@ -91,10 +91,10 @@ function more() {
     transparent:    true
     });
     //var reflective_material = new THREE.MeshBasicMaterial(0xffffff);
-    acc_disk = new THREE.Mesh(geometry, shader_material);
+    screen = new THREE.Mesh(geometry, shader_material);
 
-    acc_disk.position.z = -1;
-    scene.add(acc_disk);
+    screen.position.z = -1;
+    scene.add(screen);
 
     stats = new Stats();
     stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom

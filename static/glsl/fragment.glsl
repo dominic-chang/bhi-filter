@@ -103,97 +103,6 @@ float F(float phi, float m){
     return rawF(sin(phi), m);
 }
 
-float am(float u, float m, float tol){
-
-    float ambuf[10];
-    if(u == 0.){return 0.;}
-
-    float sqrt_tol = sqrt(tol);
-    if(m < sqrt_tol){
-        // A&S 16.13.4
-        return u - 0.25*m*(u - 0.5*sin(2.0*u));
-    }
-    float m1 = 1. - m;
-    if(m1 < sqrt_tol){
-        // A&S 16.15.4
-        float t = tanh(u);
-        return asin(t) + 0.25*m1*(t - u*(1. - pow(t, 2.)))*cosh(u);
-    }
-
-    float a = 1.;
-    float b = sqrt(m1);
-    float c = sqrt(m);
-    int n = 0;
-    while(abs(c) > tol){
-        if(n>=10){ return 1.0/0.0;}
-        float atemp = 0.5*(a+b);
-        float btemp = sqrt(a*b); 
-        float ctemp = 0.5*(a-b);
-        a = atemp;
-        b = btemp;
-        c = ctemp;
-        ambuf[n] = c/a;
-        n = n + 1;
-    }
-
-    float phi = a*u*pow(2.,float(n));
-    for(int i = n-1; i >= 0; i--){
-        phi = 0.5*(phi + asin(ambuf[i]*sin(phi)));
-    }
-    return phi;
-}
-
-float sn(float u, float m){
-    bool lt0 = m < 0.;
-    bool gt1 = m > 1.;
-    if (!(lt0) && !(gt1)){
-        float phi = am(u, m, D1MACH3*2.);
-        return sin(phi);
-    } else if(lt0) {
-        float mu1 = 1.0/(1.-m);
-        float mu = -m*mu1;
-        float sqrtmu1 = sqrt(mu1);
-        float v = u/sqrtmu1;
-        float phi = am(v, mu, D1MACH3*2.);
-
-        float s = sin(phi);
-
-        return sqrtmu1*s/sqrt(1.-mu*pow(s,2.));
-
-    } else {
-        float mu = 1. / m;
-        float v = u * sqrt(m);
-        float phi = am(v, mu, D1MACH3*2.);
-
-        return sqrt(mu)*sin(phi);
-    }
-}
-
-float cn(float u, float m){
-    bool lt0 = m < 0.;
-    bool gt1 = m > 1.;
-    if (!(lt0) && !(gt1)){
-        float phi = am(u, m, D1MACH3*2.);
-        return cos(phi);
-    } else if(lt0) {
-        float mu1 = 1.0/(1.-m);
-        float mu = -m*mu1;
-        float sqrtmu1 = sqrt(mu1);
-        float v = u/sqrtmu1;
-        float phi = am(v, mu, D1MACH3*2.);
-
-        float s = sin(phi);
-
-        return cos(phi)/sqrt(1.-mu*pow(s,2.));
-
-    } else {
-        float mu = 1. / m;
-        float v = u * sqrt(m);
-        float phi = am(v, mu, D1MACH3*2.);
-
-        return sqrt(1.- mu*pow(sin(phi),2.));
-    }
-}
 
 float psimax(float mag){
     vec2 q = vec2(2.*mag*mag, 0.);
@@ -241,7 +150,6 @@ void main() {
 
         vec2 texcrd3 = magfac*texcrd/imagescale + vec2(0.5, 0.5);
         if(length(magfac*texcrd/imagescale)  > 0.5 || angle > atan(1.5)) {
-            //gl_FragColor = vec4(7.0/255.0, 12.0/255.0, 35.0/255.0, 1.);
             vec2 skycrd = vec2(x + 0.5, y + 0.5);
             gl_FragColor = texture2D(texturebg, skycrd);
             return;
