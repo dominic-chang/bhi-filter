@@ -10,27 +10,35 @@ uniform float theta;
 varying vec2 vUv;
 
 
+/* 
+ * 2D complex number operations
+ */
 
+// Complex sum
 vec2 c_p(vec2 x, vec2 y){
     return vec2(x[0]+y[0], x[1]+y[1]);
 }
 
+// Complex multiplication
 vec2 c_m(vec2 x, vec2 y){
     return vec2(x[0]*y[0] - x[1]*y[1] , x[0]*y[1] + x[1]*y[0]);
 }
 
+// Complex division 
 vec2 c_d(vec2 x, vec2 y){
     return c_m(x, vec2(y[0], -y[1]))/(pow(y[0], 2.)+pow(y[1],2.));
 }
 
+// Complex power 
 vec2 c_pow(vec2 x, float y){
     float mag = pow(sqrt(x[0]*x[0] + x[1]*x[1]), y);
     float angle = y*(atan(x[1],x[0]));
     return vec2(mag*cos(angle), mag*sin(angle));
 }
 
-
-
+/* 
+ * Elliptic integrals Routines
+ */
 float DRF(float X, float Y, float Z){
 
     float ERRTOL = pow(4.0*D1MACH3, 1.0/6.0);
@@ -103,7 +111,7 @@ float F(float phi, float m){
     return rawF(sin(phi), m);
 }
 
-
+// Maximum winding angle experience by photon travelling from observer to infinity 
 float psimax(float mag){
     vec2 q = vec2(2.*mag*mag, 0.);
     vec2 p = vec2(-mag*mag, 0.);
@@ -119,23 +127,28 @@ float psimax(float mag){
     vec2 v41 = v4 - v1;
     vec2 v31 = v3 - v1;
     vec2 v42 = v4;
-
-
     
     float ellk = v32[0]*v41[0] / (v31[0]*v42[0]);
     return 4.*mag*F(asin(sqrt(v31[0]/v41[0])), ellk)/sqrt(v31[0]*v42[0]);
 }
 
-
+/*
+    There are 3 spaces in play here, each of the spaces has atleast one coordinate system:
+    1. Screen: These are the coordinates of the screen in pixels .
+    2. Texture: These are the coordinates of the texture. (There are 3 texture coordinate systems)
+    3. Sky: These are the coordinates of the celestial sphere.
+*/
 void main() {
-    float scale1 = 5.0;
+    float scale1 = 5.0;//TODO: What is this? I think this is realted to the FOV of the observer's screen
     float x_translate = 0.0;
     float imagescale = 0.75;
     float scale2 = 25.0;//size of horizon
+
+    // Screen coordinates these are rescaled such that the origin is in the center of the screen
     vec2 uv =  ((gl_FragCoord.xy ) / uResolution.x - vec2(x_translate + 0.5 ,0.5*uResolution.y/uResolution.x)); 
     float x = uv.x;
     float y = uv.y;
-    float mag = scale1*scale2 *length(uv);
+    float mag = scale1*scale2 *length(uv); // Impact parameter on the screen
     float cosvarphi = x/mag;
 
     if (mag*mag > 27.){
@@ -143,13 +156,14 @@ void main() {
         vec2 pretexcrd = scale1 * (gl_FragCoord.xy/uResolution.x);
         vec2 texcrd = scale1*vec2(x, y);
         float texcrd2rad = scale1*length(texcrd);
-        float angle = (atan(texcrd2rad) - deltapsi*10.0 );
+        // Perpective mapping of winding angle to texture coordinates. atan here is roughly the radius on the texture (video)
+        float angle = (atan(texcrd2rad) - deltapsi*10.0 ); // Deltapsi is multiplied by 10 here to make the photon ring more visible
         float fov = 0.5*scale1;
 
         float magfac= tan((angle))/(texcrd2rad);
 
         vec2 texcrd3 = magfac*texcrd/imagescale + vec2(0.5, 0.5);
-        if(length(magfac*texcrd/imagescale)  > 0.5 || angle > atan(1.5)) {
+        if(length(magfac*texcrd/imagescale)  > 0.5 || angle > atan(1.5)) {// If the radius on the video is too big, change to the other texture
             vec2 skycrd = vec2(x + 0.5, y + 0.5);
             gl_FragColor = texture2D(texturebg, skycrd);
             return;
@@ -159,7 +173,7 @@ void main() {
 
         gl_FragColor = texture2D(textureft, texcrd3);
     } else {
-        gl_FragColor = vec4(0., 0., 0., 1.);
+        gl_FragColor = vec4(0., 0., 0., 1.);// Color the black hole shadow black
     }
     
 }
