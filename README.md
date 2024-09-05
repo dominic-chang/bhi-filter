@@ -8,4 +8,4 @@ The image is then lensed by a Schwarzschild blackhole and projected onto the scr
 The filter calculates the exact lensing structure one would see when looking at a blackhole, but emphasized by a factor of 10 to make the photon rings more apparent. Maybe I'll add some slowlight dynamics in a later update.
 
 
-Check out the filter on my [ghpage](https://dchang10.github.io/bhi-filter)
+Check out the filter on my [ghpage](https://dominic-chang.github.io/bhi-filter)
