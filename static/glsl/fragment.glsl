@@ -113,14 +113,16 @@ float F(float phi, float m){
 
 // Maximum winding angle experience by photon travelling from observer to infinity 
 float psimax(float mag){
-    vec2 q = vec2(2.*mag*mag, 0.);
-    vec2 p = vec2(-mag*mag, 0.);
-    vec2 C1 = c_pow(-q/2. + c_pow(c_pow(q, 2.)/4. + c_pow(p, 3.)/27., 1./2.), 1./3.);
-    vec2 C2 = c_m(C1, vec2(-1./2., sqrt(3.)/2.));
-    vec2 C3 = c_m(C1, vec2(-1./2., -sqrt(3.)/2.));
-    vec2 v4 = C1 - c_d(p, 3.*C1);
-    vec2 v1 = C2 - c_d(p, 3.*C2);
-    vec2 v3 = C3 - c_d(p, 3.*C3);
+    float b2 = mag * mag;
+    vec2 q = vec2(b2 + b2 , 0.);
+    vec2 p = vec2(-b2, 0.);
+    vec2 C = c_pow(vec2(q[0] * q[0], 0.) / 4. + vec2(p[0] * p[0] * p[0], 0.) / 27., 0.5);
+    vec2 C1 = c_pow(-q / 2. + C, 1. / 3.);
+    vec2 C2 = c_m(C1, vec2(-1., sqrt(3.)) / 2.);
+    vec2 C3 = c_m(C1, vec2(-1., -sqrt(3.)) / 2.);
+    vec2 v1 = C2 - c_d(p, 3. * C2);
+    vec2 v3 = C3 - c_d(p, 3. * C3);
+    vec2 v4 = C1 - c_d(p, 3. * C1);
 
     vec2 v32 = v3;
     vec2 v21 = -v1;
